@@ -23,12 +23,16 @@
 
 #include "Enabler.h"
 
+#define ACTION(CLASSNAME, MF) static_cast<void (BaseNode::*)(Event)>(&CLASSNAME::MF)
+
+
 using omnetpp::cMessage;
 
 class BaseNode : public omnetpp::cSimpleModule {
+private:
+  Event wakeUp;
+  Event timer;
 protected:
-  /** @brief An event to active this node spontaneously */
-  Event spontaneously;
   /** @brief The current status of this node */
   Status status;
   /** @brief The set of rules this node obeys. The structure of a rule is:
@@ -48,7 +52,7 @@ protected:
    */
   std::unordered_map<
     Enabler, 
-    std::function<void(const BaseNode&, Event)>,
+    std::function<void(BaseNode&, Event)>,
     EnablerHasher
   > rule;
 protected:
@@ -94,12 +98,25 @@ protected:
    *  @param second - The name of a HTML standard color
   */
   virtual void changeEdgeColor(int, const char*);
+  /** @brief Spontaneously, gets up this node at time t 
+   *  @param first - The time at which this node wakes up
+  */
+  virtual void spontaneously();
+  /** @brief Sets a timer 
+   *  @param first - The time to trigger the ringing event from this moment
+  */
+  virtual void setTimer(omnetpp::simtime_t);
+
 public:
   /** @brief Default constructor */
-  BaseNode() : spontaneously(nullptr), status() { }
+    BaseNode() : wakeUp(nullptr), timer(nullptr), status() { }
+
   /** @brief Default destructor which tries to delete 
    *  the event "spontaneously" */
-  virtual ~BaseNode() { cancelAndDelete(spontaneously); }
+  virtual ~BaseNode() { 
+    cancelAndDelete(wakeUp); 
+    cancelAndDelete(timer);
+  }
   /** @brief Sets the initial status of protocols according to its role. In 
    *  addition, records the rules this node obeys.
    */
@@ -107,7 +124,7 @@ public:
   /** @brief Invokes the action corresponding to a given (status, event) pair.
    *  If the action is undefined, then nil is invoke.
    */
-  virtual void handleMessage(omnetpp::cMessage*);
+  virtual void handleMessage(Event);
 };
 
 #endif // BASENODE_H

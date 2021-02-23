@@ -50,11 +50,25 @@ void BaseNode::changeEdgeWidth(int p, int width) {
   gate("port$o", p)->getChannel()->getDisplayString().setTagArg("ls", 1, p);
 }
 
-void BaseNode::handleMessage(omnetpp::cMessage* recvMsg) {
-  EventKind event = static_cast<EventKind>(recvMsg->getKind());
+void BaseNode::handleMessage(Event ev) {
+  EventKind event = static_cast<EventKind>(ev->getKind());
   Enabler pair(status, event);
   if (rule.find(pair) != rule.end())
-    rule[pair];
+    rule[pair](*this, ev);
   else
-    nil(recvMsg);
+    nil(ev);
+}
+
+void BaseNode::spontaneously() {
+  wakeUp = new omnetpp::cMessage("spontaneosly", EventKind::IMPULSE);
+  scheduleAt(par("startTime"), wakeUp);
+}
+
+void BaseNode::setTimer(omnetpp::simtime_t t) {
+  if (!timer)
+    timer = new omnetpp::cMessage("timer", EventKind::TIMER);
+  if (!timer->isScheduled())
+    scheduleAt(omnetpp::simTime() + t, timer);
+  else 
+    EV_INFO << "The timer is already scheduled\n";
 }

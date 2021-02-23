@@ -25,10 +25,14 @@ enum EventKind {
   IMPULSE = 0,
   /** @brief The expiration of a timer */
   TIMER,
-  /** @brief The reception of a generic message */
-  MSG,
+  /** @brief The reception of a message */
+  MSG
+};
+
+
+enum MsgKind {
   /** @brief The reception of a query */
-  QUERY,
+  QUERY = 3,
   /** @brief The reception of a reply */
   REPLY,
   /** @brief The reception of an affirmative response */
