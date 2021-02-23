@@ -49,3 +49,12 @@ void BaseNode::changeEdgeColor(int p, const char* color) {
 void BaseNode::changeEdgeWidth(int p, int width) {
   gate("port$o", p)->getChannel()->getDisplayString().setTagArg("ls", 1, p);
 }
+
+void BaseNode::handleMessage(omnetpp::cMessage* recvMsg) {
+  EventKind event = static_cast<EventKind>(recvMsg->getKind());
+  Enabler pair(status, event);
+  if (rule.find(pair) != rule.end())
+    rule[pair];
+  else
+    nil(recvMsg);
+}

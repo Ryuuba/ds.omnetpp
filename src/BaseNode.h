@@ -18,19 +18,39 @@
 
 #include <omnetpp.h>
 #include <vector>
-#include "Status.h"
-#include "MsgKind.h"
+#include <unordered_map>
+#include <functional>
+
+#include "Enabler.h"
+
+using omnetpp::cMessage;
 
 class BaseNode : public omnetpp::cSimpleModule {
 protected:
-  /** @brief A timer to schedule events on this node */
-  omnetpp::cMessage* timer;
-  /** @brief A message that must be instanced only when a node creates a message */
-  omnetpp::cMessage* msg;
-  /** @brief The time at which an experiment starts */
-  omnetpp::simtime_t startTime;
+  /** @brief An event to active this node spontaneously */
+  Event spontaneously;
   /** @brief The current status of this node */
   Status status;
+  /** @brief The set of rules this node obeys. The structure of a rule is:
+   *  (status, event) -> action. The elements of the pair (status, event) 
+   *  corresponds to objects of kind Status and MsgKind, properly. Note that
+   *  both the spotaneous impulse and the ringing of a timer are produced by 
+   *  self-messages, thus the second element (the event) is a message. The 
+   *  action is a member-function that the user of this class must register in 
+   *  the initialize method as follows:
+   * 
+   *  rule[enabler] = &action,
+   * 
+   *  where the enable is an object of kind Enabler and action is a BaseNode 
+   *  member-function with signature:
+   * 
+   *  void BaseNode::action(omnetpp::cMessage*) 
+   */
+  std::unordered_map<
+    Enabler, 
+    std::function<void(const BaseNode&, Event)>,
+    EnablerHasher
+  > rule;
 protected:
   /** @brief Broadcasts a message to N(x) 
    *  @param first - a valid pointer to a message
@@ -76,13 +96,18 @@ protected:
   virtual void changeEdgeColor(int, const char*);
 public:
   /** @brief Default constructor */
-  BaseNode() : timer(nullptr), msg(nullptr), startTime(0.0), status() { }
-  /** @brief Default destructor which tries to delete the timer */
-  virtual ~BaseNode() { cancelAndDelete(timer); }
-  /** @brief Set the initial status of protocols according to its role */
+  BaseNode() : spontaneously(nullptr), status() { }
+  /** @brief Default destructor which tries to delete 
+   *  the event "spontaneously" */
+  virtual ~BaseNode() { cancelAndDelete(spontaneously); }
+  /** @brief Sets the initial status of protocols according to its role. In 
+   *  addition, records the rules this node obeys.
+   */
   virtual void initialize() = 0;
-  /** @brief Implement here the protocol actions */
-  virtual void handleMessage(omnetpp::cMessage*) = 0;
+  /** @brief Invokes the action corresponding to a given (status, event) pair.
+   *  If the action is undefined, then nil is invoke.
+   */
+  virtual void handleMessage(omnetpp::cMessage*);
 };
 
 #endif // BASENODE_H

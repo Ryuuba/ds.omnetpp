@@ -61,8 +61,16 @@ public:
     status = s.status; 
     return *this; 
   }
+  /** @brief Returns the numeric value associated to the status */
+  virtual int get() {return status;}
+  /** @brief Returns the numeric value associated to the status */
+  virtual int get() const {return status;}
   /** @brief Assings a possible status of this set*/
   virtual bool operator==(const Status& s) {
+    return status == s.status; 
+  }
+  /** @brief Assings a possible status of this set*/
+  virtual bool operator==(const Status& s) const {
     return status == s.status; 
   }
   /** @brief Returns a c-style string containing the name of the status */
