@@ -64,6 +64,16 @@ protected:
     EV_WARN << "Undefinded action, assuming (" << status.str() << ", " 
             << msg->getName() << ") -> nil" << '\n';
   }
+  /** @brief Changes width of an edge 
+   *  @param first - The number of port to access the link
+   *  @param second - The width of the edge
+  */
+  virtual void changeEdgeWidth(int, int);
+  /** @brief Changes the color of an edge 
+   *  @param first - The number of port to access the link
+   *  @param second - The name of a HTML standard color
+  */
+  virtual void changeEdgeColor(int, const char*);
 public:
   /** @brief Default constructor */
   BaseNode() : timer(nullptr), msg(nullptr), startTime(0.0), status() { }

@@ -41,3 +41,11 @@ omnetpp::cMessage* BaseNode::localMulticast(
   }
   return msg;
 }
+
+void BaseNode::changeEdgeColor(int p, const char* color) {
+  gate("port$o", p)->getChannel()->getDisplayString().setTagArg("ls", 0, "red");
+}
+
+void BaseNode::changeEdgeWidth(int p, int width) {
+  gate("port$o", p)->getChannel()->getDisplayString().setTagArg("ls", 1, p);
+}
