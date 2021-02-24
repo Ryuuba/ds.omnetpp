@@ -67,11 +67,11 @@ void BaseNode::setTimer(omnetpp::simtime_t t) {
 void BaseNode::handleMessage(Event ev) {
   EventKind event = static_cast<EventKind>(ev->getKind());
   Enabler pair(status, event);
-  auto action = rule.find(pair);
-  if (action != rule.end()) {
+  auto it = rule.find(pair);
+  if (it != rule.end()) {
   EV_INFO << "Node[" << getIndex() << "] meets rule ("
           << status.str() << ", " << ev->getName() << ") -> "
-          << action->second->getName() << '\n';
+          << it->second->getName() << '\n';
     (*rule[pair])(ev);
   }
   else
