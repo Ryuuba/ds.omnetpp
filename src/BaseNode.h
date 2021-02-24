@@ -113,12 +113,13 @@ public:
    *  @param second - The name of a HTML standard color
   */
   virtual void changeEdgeColor(int, const char*);
-  /** @brief Spontaneously, gets up this node at time t 
-   *  @param first - The time at which this node wakes up
+  /** @brief Spontaneously, gets up this node. Wake-up time is set in 
+   *  omnetpp.ini (parameter startTime). By default, nodes spontaneously wake
+   *  up at t = 0 s.
   */
   virtual void spontaneously();
   /** @brief Sets a timer 
-   *  @param first - The time to trigger the ringing event from this moment
+   *  @param first - The time to trigger a timeout event from this moment
   */
   virtual void setTimer(omnetpp::simtime_t);
 };
