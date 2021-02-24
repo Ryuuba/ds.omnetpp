@@ -24,7 +24,7 @@
 				"private:",
 				"\t$3* node;",
 				"public:",
-				"\tAction${2:ClassName}(${3:NodeClass}* n) : node(n), BaseAction(\"Action${2:ClassName}\") { }",
+				"\tAction${2:ClassName}(${3:NodeClass}* n) : BaseAction(\"Action${2:ClassName}\") node(n) { }",
 				"\tvoid operator()(Event ev) {", 
 				"\t\t$0",
 				"\t}",
