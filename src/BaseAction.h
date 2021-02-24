@@ -11,17 +11,24 @@
 // 
 // You should have received a copy of the GNU Lesser General Public License
 // along with this program.  If not, see http://www.gnu.org/licenses/.
-//
+// 
 
-package dsbase;
-import dsbase.INode;
+#if !defined(BASE_ACTION_H)
+#define BASE_ACTION_H
 
-simple BaseNode like INode
-{
-    parameters:
-        @display("i=device/laptop");
-        double startTime @unit(s) = default(0s); // The time at which simulation starts
-        bool initiator = default(false);
-    gates:
-        inout port[];     // Bidirectional link
-}
+#define Add_Action(CLASSNAME) std::make_shared<CLASSNAME>(this)
+
+class BaseAction {
+private:
+  const char* name;
+public:
+  /** @brief Default constructor: sets the value of member name */
+  BaseAction(const char* n) : name(n) { }
+  /** @brief Abstract member function that derived class overloads to act as
+   *  functors */
+  virtual void operator()(Event) = 0;
+  /** @brief Returns the name of the action */
+  virtual const char* getName() { return name; }
+};
+
+#endif // BASE_ACTION_H

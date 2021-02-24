@@ -50,17 +50,8 @@ void BaseNode::changeEdgeWidth(int p, int width) {
   gate("port$o", p)->getChannel()->getDisplayString().setTagArg("ls", 1, p);
 }
 
-void BaseNode::handleMessage(Event ev) {
-  EventKind event = static_cast<EventKind>(ev->getKind());
-  Enabler pair(status, event);
-  if (rule.find(pair) != rule.end())
-    rule[pair](*this, ev);
-  else
-    nil(ev);
-}
-
 void BaseNode::spontaneously() {
-  wakeUp = new omnetpp::cMessage("spontaneosly", EventKind::IMPULSE);
+  wakeUp = new omnetpp::cMessage("spontaneuosly", EventKind::IMPULSE);
   scheduleAt(par("startTime"), wakeUp);
 }
 
@@ -69,6 +60,20 @@ void BaseNode::setTimer(omnetpp::simtime_t t) {
     timer = new omnetpp::cMessage("timer", EventKind::TIMER);
   if (!timer->isScheduled())
     scheduleAt(omnetpp::simTime() + t, timer);
-  else 
+  else
     EV_INFO << "The timer is already scheduled\n";
+}
+
+void BaseNode::handleMessage(Event ev) {
+  EventKind event = static_cast<EventKind>(ev->getKind());
+  Enabler pair(status, event);
+  auto action = rule.find(pair);
+  if (action != rule.end()) {
+  EV_INFO << "Node[" << getIndex() << "] meets rule ("
+          << status.str() << ", " << ev->getName() << ") -> "
+          << action->second->getName() << '\n';
+    (*rule[pair])(ev);
+  }
+  else
+    nil(ev);
 }

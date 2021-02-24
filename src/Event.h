@@ -19,20 +19,15 @@
 #include <omnetpp.h>
 
 typedef omnetpp::cMessage* Event;
+typedef omnetpp::cMessage* Msg;
 
 enum EventKind {
   /** @brief An spontaneous impulse */
   IMPULSE = 0,
   /** @brief The expiration of a timer */
   TIMER,
-  /** @brief The reception of a message */
-  MSG
-};
-
-
-enum MsgKind {
   /** @brief The reception of a query */
-  QUERY = 3,
+  QUERY,
   /** @brief The reception of a reply */
   REPLY,
   /** @brief The reception of an affirmative response */

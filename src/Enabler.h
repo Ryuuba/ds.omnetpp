@@ -27,6 +27,10 @@ public:
     this->status = status;
     this->event = event;
   }
+  void set(const Status& status, EventKind event) {
+    this->status = status;
+    this->event = event;
+  }
   bool operator==(const Enabler& e) {
     return (this->status == e.status) && (this->event == event);
   }
@@ -38,7 +42,8 @@ public:
 
 struct EnablerHasher {
   std::size_t operator()(Enabler const& e) const noexcept {
-    return std::hash<int>{}((e.status.get() + e.event)*(e.status.get() + e.event + 1)/2 + e.event);
+    size_t hash = std::hash<int>{}((e.status.get() + e.event)*(e.status.get() + e.event + 1)/2 + e.event);
+    return hash;
   }
 };
 

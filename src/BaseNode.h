@@ -20,42 +20,56 @@
 #include <vector>
 #include <unordered_map>
 #include <functional>
+#include <memory>
 
 #include "Enabler.h"
-
-#define ACTION(CLASSNAME, MF) static_cast<void (BaseNode::*)(Event)>(&CLASSNAME::MF)
-
-
-using omnetpp::cMessage;
+#include "BaseAction.h"
 
 class BaseNode : public omnetpp::cSimpleModule {
 private:
+  /** @brief An event causing this node wakes up */
   Event wakeUp;
-  Event timer;
+  /** @brief A timer that rings after sometime. It is set by the setTimer()
+   *  method */
+  Event timer; 
 protected:
-  /** @brief The current status of this node */
-  Status status;
-  /** @brief The set of rules this node obeys. The structure of a rule is:
+  /** @brief The set of rules B(x) this node obeys. The structure of a rule is:
    *  (status, event) -> action. The elements of the pair (status, event) 
-   *  corresponds to objects of kind Status and MsgKind, properly. Note that
-   *  both the spotaneous impulse and the ringing of a timer are produced by 
+   *  corresponds to objects of kind Status and EventKind, properly. Note that
+   *  both the spontaneous impulse and the ringing of a timer are produced by 
    *  self-messages, thus the second element (the event) is a message. The 
-   *  action is a member-function that the user of this class must register in 
+   *  action is a functor that the user of this class must register in 
    *  the initialize method as follows:
    * 
-   *  rule[enabler] = &action,
+   *  rule[enabler] = Action,
    * 
-   *  where the enable is an object of kind Enabler and action is a BaseNode 
-   *  member-function with signature:
+   *  where the enabler is an object of kind Enabler and action is a functor
+   *  extending the abstract class Action. Each action must be defined by the 
+   *  user of this class in the Action.cc file
    * 
-   *  void BaseNode::action(omnetpp::cMessage*) 
    */
-  std::unordered_map<
-    Enabler, 
-    std::function<void(BaseNode&, Event)>,
-    EnablerHasher
-  > rule;
-protected:
+  std::unordered_map<Enabler, std::shared_ptr<BaseAction>, EnablerHasher> rule;
+public:
+  /** @brief The current status of this node */
+  Status status;
+public:
+  /** @brief Default constructor */
+  BaseNode() : wakeUp(nullptr), timer(nullptr), status() { }
+
+  /** @brief Default destructor which tries to delete 
+   *  the event "spontaneously" */
+  virtual ~BaseNode() { 
+    cancelAndDelete(wakeUp); 
+    cancelAndDelete(timer);
+  }
+  /** @brief Sets the initial status of protocols according to its role. In 
+   *  addition, records the rules this node obeys.
+   */
+  virtual void initialize() = 0;
+  /** @brief Invokes the action corresponding to a given (status, event) pair.
+   *  If the action is undefined, then nil is invoke.
+   */
+  virtual void handleMessage(Event);
   /** @brief Broadcasts a message to N(x) 
    *  @param first - a valid pointer to a message
    *  @return a null pointer to the received message
@@ -84,9 +98,10 @@ protected:
     getDisplayString().setTagArg("t", 2, color);
   }
   /** @brief A warning message stating a node executes nil */
-  virtual void nil(omnetpp::cMessage* msg) {
+  virtual void nil(Event ev) {
     EV_WARN << "Undefinded action, assuming (" << status.str() << ", " 
-            << msg->getName() << ") -> nil" << '\n';
+            << ev->getName() << ") -> nil" << ", deleting object.\n";
+    delete ev;
   }
   /** @brief Changes width of an edge 
    *  @param first - The number of port to access the link
@@ -106,25 +121,6 @@ protected:
    *  @param first - The time to trigger the ringing event from this moment
   */
   virtual void setTimer(omnetpp::simtime_t);
-
-public:
-  /** @brief Default constructor */
-    BaseNode() : wakeUp(nullptr), timer(nullptr), status() { }
-
-  /** @brief Default destructor which tries to delete 
-   *  the event "spontaneously" */
-  virtual ~BaseNode() { 
-    cancelAndDelete(wakeUp); 
-    cancelAndDelete(timer);
-  }
-  /** @brief Sets the initial status of protocols according to its role. In 
-   *  addition, records the rules this node obeys.
-   */
-  virtual void initialize() = 0;
-  /** @brief Invokes the action corresponding to a given (status, event) pair.
-   *  If the action is undefined, then nil is invoke.
-   */
-  virtual void handleMessage(Event);
 };
 
 #endif // BASENODE_H
