@@ -87,5 +87,4 @@ void BaseNode::addRule(
 ) {
   pair.set(s, e);
   protocol[pair] = action;
-  auto it = protocol.find(pair);
 }
